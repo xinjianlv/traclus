@@ -1,11 +1,9 @@
 package com.nocml.calculation;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.nocml.pojo.Line;
 import com.nocml.pojo.Point;
-import com.nocml.pojo.Utils;
 
 public class Distance {
 
@@ -205,8 +203,18 @@ public class Distance {
 		return d_perpen;
 		
 	}
-	public static double dist(Point si,Point ei,Point sj,Point ej)
+	public static double dist(Line lp , Line tp)
 	{
+		
+		Point si;
+		Point ei;
+		Point sj;
+		Point ej;
+		
+		si=lp.getS();
+		ei=lp.getE();
+		sj=tp.getS();
+		ej=tp.getE();
 		
 		double x1=sj.x-si.x;
 		double y1=sj.y-si.y;
@@ -217,12 +225,12 @@ public class Distance {
 		double x3=ej.x-si.x;
 		double y3=ej.y-si.y;
 		
-		double minlen=Math.pow(x2,2)+Math.pow(y2,2);
+		double x=Math.pow(x2,2)+Math.pow(y2,2);
 		
-		double u1=(x1*x2+y1*y2)/minlen;
-		double u2=(x3*x2+y3*y2)/minlen;
-		
-		double psx=si.x+u1*x2;
+		double u1=(x1*x2+y1*y2)/x;
+		double u2=(x3*x2+y3*y2)/x;
+	    
+	    double psx=si.x+u1*x2;
 		double psy=si.y+u1*y2;
 		
 		double pex=si.x+u2*x2;
@@ -241,19 +249,42 @@ public class Distance {
 			d_perpen=(Math.pow(Lper1,2)+Math.pow(Lper2,2))/(Lper1+Lper2);
 		}
 		
-		double minLperpen ;
-		if(Lper1 < Lper2)
-			minLperpen = Lper1;
+		double x4=ej.x-sj.x;
+		double y4=ej.y-sj.y;
+		
+		double xi=Math.sqrt(Math.pow(x4,2)+Math.pow(y4,2));
+		double yi=Math.sqrt(Math.pow(x2,2)+Math.pow(y2,2));
+		
+		double cos=(x4*x2+y4*y2)/(xi*yi);
+		if(xi == 0 || yi == 0)
+			cos = 0;
+		double t=Math.sqrt(1 - cos * cos);
+		
+		double angle=(Math.sqrt(Math.pow(x4,2)+Math.pow(y4,2)))*t;
+		
+	    double Lpar1=Math.sqrt(Math.pow(psx-si.x,2)+Math.pow(psy-si.y,2));
+		double Lpar2=Math.sqrt(Math.pow(pex-ei.x,2)+Math.pow(pey-ei.y,2));
+		
+		double d_parallel;
+		
+		if(Lpar1>Lpar2)	
+			d_parallel=Lpar2;
 		else
-			minLperpen = Lper2;
-
-
-		double cos = cos_angle( si, ei, sj, ej);
-
-		double sin = Math.sqrt(1 - cos * cos);
-
-		double angle = minlen * sin;
-
-		return angle + minLperpen + d_perpen;
+			d_parallel=Lpar1;
+		return (d_parallel+d_perpen+angle);
 	}
+	
+//	public static double dist(Line l1 , Line l2){
+//		double angle = 0.0;
+//		double minPerpen = 0.0;
+//		double parallel = 0.0;
+//		if(distance(l1) > distance(l2)){
+//			angle = distance_angle(l1, l2);
+//			parallel = distance_perpen2(l1, l2);
+//		}else{
+//			angle = dist(l2, l1);
+//			parallel = distance_perpen2(l2, l1);
+//		}
+//	}
+
 }

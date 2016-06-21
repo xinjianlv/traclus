@@ -6,9 +6,11 @@ import java.util.ArrayList;
 public class Line {
 	Point s = new Point();
 	Point e = new Point();
+	//序号
 	int order = -1;
 	int num = -1;
 	int classifiy = 0;
+	int clusterId = -1;
 	ArrayList<Integer> cluster = new ArrayList<Integer>();
 	public Line() {
 	}
@@ -18,6 +20,12 @@ public class Line {
 	}
 
 	
+	public int getClusterId() {
+		return clusterId;
+	}
+	public void setClusterId(int clusterId) {
+		this.clusterId = clusterId;
+	}
 	public int getOrder() {
 		return order;
 	}
@@ -67,13 +75,19 @@ public class Line {
 	public void addCluster(ArrayList<Integer> cl){
 		this.cluster.addAll(cl);
 	}
+	public void addCluster(int index){
+		this.cluster.add(index);
+	}
 	
 	
 	public int getNum() {
 		return num;
 	}
 
-
+	/**
+	 * @description 设置读入时的原始行号
+	 * @param num
+	 */
 	public void setNum(int num) {
 		this.num = num;
 	}

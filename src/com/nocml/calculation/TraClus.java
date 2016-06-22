@@ -18,10 +18,19 @@ import cn.nocml.FileTool;
 import com.nocml.pojo.Line;
 import com.nocml.pojo.Point;
 import com.nocml.pojo.Trajectory;
-
+/**
+ * @description 
+ * @author xinjian lv(xinjian.lv@gmail.com)
+ *
+ */
 public class TraClus {
-	
+	/*
+	 * partition 之后的线段
+	 */
 	private ArrayList<Line> lines = new ArrayList<Line>();
+	/*
+	 * 初始轨迹
+	 */
 	private HashMap<Integer , Trajectory> trajectorys = new HashMap<Integer, Trajectory>();
 	HashMap<Integer , ArrayList<Line>> cluster = new HashMap<Integer, ArrayList<Line>>();
 	RTra rtra = new RTra();

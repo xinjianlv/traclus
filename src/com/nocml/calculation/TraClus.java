@@ -24,6 +24,8 @@ import com.nocml.pojo.Trajectory;
  *
  */
 public class TraClus {
+	
+	private int MDL_COST_ADVANTAGE = 10; 
 	/*
 	 * partition 之后的线段
 	 */
@@ -34,8 +36,8 @@ public class TraClus {
 	private HashMap<Integer , Trajectory> trajectorys = new HashMap<Integer, Trajectory>();
 	HashMap<Integer , ArrayList<Line>> cluster = new HashMap<Integer, ArrayList<Line>>();
 	RTra rtra = new RTra();
-	int minLines = 10;
-	double eps = 20;
+	int minLines = 8;
+	double eps = 29;
 	public ArrayList<Line> getLines() {
 		return lines;
 	}
@@ -90,7 +92,7 @@ public class TraClus {
 			while(end < points.size()){
 				cost_par = Distance.distance_mdl_par(points, start, end);
 				cost_nopar = Distance.distance_mdl_nopar(points, start, end);
-				if(cost_par > cost_nopar + 10){
+				if(cost_par > cost_nopar + MDL_COST_ADVANTAGE){
 					Line line = new Line(points.get(start), points.get(end - 1));
 					line.setNum(points.get(0).getNum());
 					list.add(line);

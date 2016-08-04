@@ -25,7 +25,7 @@ import com.nocml.pojo.Trajectory;
  */
 public class TraClus {
 	
-	private int MDL_COST_ADVANTAGE = 10; 
+	private int MDL_COST_ADVANTAGE = 0; 
 	/*
 	 * partition 之后的线段
 	 */
@@ -34,12 +34,16 @@ public class TraClus {
 	 * 初始轨迹
 	 */
 	private HashMap<Integer , Trajectory> trajectorys = new HashMap<Integer, Trajectory>();
-	HashMap<Integer , ArrayList<Line>> cluster = new HashMap<Integer, ArrayList<Line>>();
+	private HashMap<Integer , ArrayList<Line>> cluster = new HashMap<Integer, ArrayList<Line>>();
 	RTra rtra = new RTra();
 	int minLines = 8;
 	double eps = 29;
 	public ArrayList<Line> getLines() {
 		return lines;
+	}
+
+	public void setMDL_COST_ADVANTAGE(int mDL_COST_ADVANTAGE) {
+		MDL_COST_ADVANTAGE = mDL_COST_ADVANTAGE;
 	}
 
 	public HashMap<Integer, Trajectory> getTrajectorys() {
@@ -51,7 +55,7 @@ public class TraClus {
 		this.eps = eps;
 	}
 	
-	public void load(String filename){
+	public void loadPoints(String filename){
 		try{
 			Scanner scan = new Scanner(new File(filename));
 			while (scan.hasNext()) {
@@ -73,11 +77,51 @@ public class TraClus {
 			e.printStackTrace();
 		}
 	}
+	public void loadTrajectory(String filename){
+		try{
+			Scanner scan = new Scanner(new File(filename));
+			int order = 0;
+			int c = 0;
+			while (scan.hasNext()) {
+			
+				int lineNum = scan.nextInt();
+				int pointSum = scan.nextInt();
+	
+				while (pointSum > 0) {
+					double x = scan.nextDouble() + 500;
+					double y = scan.nextDouble() + 500;
+					Point point = new Point(x, y);
+					point.setNum(lineNum);
+					point.setOrder(order++);
+					Trajectory tra = new Trajectory();
+					if (trajectorys.containsKey(lineNum))
+						tra = trajectorys.get(lineNum);
+					tra.insert(point);
+					trajectorys.put(lineNum, tra);
+					pointSum--;
+				}
+				if(c > 1000)
+					break;
+				if (c % 1000 == 0)
+					System.out.printf("load %d trajectory.\n",c);
+				c++;
+			}
+			scan.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 	
 	public void partition(){
+		System.out.println("partition...");
+		System.out.println("size "+trajectorys.size());
+		int c = 0;
 		for(Entry<Integer,Trajectory> en : trajectorys.entrySet()){
 			List<Line> ls = partition(en.getValue().getPoints());
 			lines.addAll(ls);
+			if(c %1000 == 0)
+				System.out.println("processed(partition) " + c + "...");
+			c++;
 		}
 		System.out.println("lines " + lines.size());
 	}
@@ -121,11 +165,13 @@ public class TraClus {
 	
 	
 	public void cluster(){
+		System.out.println("cluster...");
+		System.out.println("line size : " + lines.size());
 		int end = lines.size();
 		int clusterId = 1;
 		for(int i = 0 ; i < end ; i++){
-			if(i % 100 == 0)
-				System.out.println("processed " + i + "...");
+			if(i % 10 == 0)
+				System.out.println("processed(cluster) " + i + "...");
 			Line l = lines.get(i);
 			if(l.getClassifiy() == 0){
 				ArrayList<Integer> neighbor = getNeighbor(i);
@@ -180,7 +226,6 @@ public class TraClus {
 			for(Line l : en.getValue()){
 				save.add(en.getKey() + "\t" + l.toString());
 			}
-			System.out.printf("==clusterId : %d \t count:%d\n", en.getKey() , en.getValue().size());
 		}
 		try {
 			FileTool.SaveListToFile(save, ofile, false);
@@ -189,6 +234,7 @@ public class TraClus {
 		}
 	}
 	private void ExpandCluster(int center , ArrayList<Integer> neighbor){
+		System.out.println("Expanding...");
 		while(neighbor.size() > 0){
 			int index = neighbor.get(0);
 			ArrayList<Integer> sub_neighbor = getNeighbor(index);
@@ -255,11 +301,31 @@ public class TraClus {
 	public ArrayList<Trajectory> getRTrajectory( int min  , int radius){
 		rtra.setParameter(min, radius);
 		for(Entry<Integer, ArrayList<Line>> en : cluster.entrySet()){
-			rtra.setCluster(en.getValue());
+			ArrayList<Line> ctra = new ArrayList<Line>();
+			ctra.addAll(en.getValue());
+			rtra.setCluster(ctra);
 			rtra.getRTra();
-			rtra.clear();
+			rtra.clearData();
 		}
 		return rtra.getRTrajectory();
+	}
+	public boolean isBZEOR(ArrayList<Line> list){
+		try{
+			for(Line l : list){
+				Point p1 = l.getS();
+				Point p2 = l.getE();
+				if(p1.x < 0 || p1.y < 0){
+					return false;
+				}
+				if(p2.x < 0 || p2.y < 0){
+					return false;
+				}
+					
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return true;
 	}
 	public void saveRtrajectory(String filepath){
 		ArrayList<Trajectory> rTrajectory  = rtra.getRTrajectory();
@@ -311,10 +377,13 @@ public class TraClus {
 		try{
 			TraClus traClus = new TraClus();
 			String root = System.getProperty("user.dir") + "/";
+//			String filename = "data.motion.txt";
+//			traClus.loadTrajectory(root + filename);
 			String filename = "Copydeer95.txt";
-			traClus.load(root + filename);
+			traClus.loadPoints(root + filename);
 			Draw draw = new Draw();
-			traClus.setParameter(10, 25);
+			traClus.setParameter(15, 20);
+			traClus.setMDL_COST_ADVANTAGE(10);
 			traClus.partition();
 			traClus.sortLine();
 			traClus.ouputLines("ls_my.txt");
@@ -324,13 +393,6 @@ public class TraClus {
 			traClus.outputCluster("cluster_my_check.txt");
 			System.out.println(traClus.getLines().size());
 			HashMap<Color , List<Line>> toDraw = new HashMap<Color, List<Line>>();
-//			toDraw.put(new Color(100 , 100 ,100), traClus.getLines());
-//			HashMap<Integer , ArrayList<Line>>  clusters = traClus.getCluster();
-//			for(Entry<Integer , ArrayList<Line>> en : clusters.entrySet()){
-//				System.out.println("cluster line " + en.getValue().size());
-//				toDraw.put(new Color(0,255,0), en.getValue());
-//			}
-//			
 			HashMap<Integer, Trajectory> trajecotrys = traClus.getTrajectorys();
 			for(Entry<Integer,Trajectory> en : trajecotrys.entrySet()){
 				draw.addPoints(new Color(100,100,100), en.getValue().getPoints());

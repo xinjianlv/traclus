@@ -16,7 +16,7 @@ public class RTra {
 	private double sinv ;
 	private double cosv ;
 	private ArrayList<Point> points = new ArrayList<Point>();
-	private ArrayList<Line> cluster = new ArrayList<Line>();
+	private ArrayList<Line> tracluster = new ArrayList<Line>();
 	private ArrayList<Trajectory> rtrajectory = new ArrayList<Trajectory>();
 	public void setParameter(int minlines , double radius){
 		this.minlines = minlines;
@@ -40,7 +40,7 @@ public class RTra {
 	}
 	public void sortLine(){
 		try{
-			Collections.sort(cluster, new Comparator<Line>(){
+			Collections.sort(tracluster, new Comparator<Line>(){
 				@Override
 				public int compare(Line l1, Line l2) {
 					double v1 = getMinX(l1.getS(), l1.getE());
@@ -60,13 +60,13 @@ public class RTra {
 		return Math.min(p1.getX(), p2.getX());
 	}
 	public ArrayList<Line> getCluster() {
-		return cluster;
+		return tracluster;
 	}
 	public void setCluster(ArrayList<Line> cluster) {
-		this.cluster = cluster;
+		this.tracluster = new ArrayList<Line>(cluster);
 	}
-	public void clear(){
-		this.cluster.clear();
+	public void clearData(){
+		this.tracluster.clear();
 		this.points.clear();
 	}
 
@@ -86,7 +86,7 @@ public class RTra {
 	    double px=0;
 	    //所有线段的平均y轴长度
 		double py=0;
-		for (Line l : cluster) {
+		for (Line l : tracluster) {
 			if (l.getS().getOrder() > l.getE().getOrder()) {
 				px += (l.getS().x - l.getE().x);
 				py += (l.getS().y - l.getE().y);
@@ -95,8 +95,8 @@ public class RTra {
 				py += (l.getE().y - l.getS().y);
 			}
 		}
-		px /= cluster.size();
-		py /= cluster.size();
+		px /= tracluster.size();
+		py /= tracluster.size();
 		
 		//平均线段长度
 		double l=Math.sqrt(px*px+py*py);
@@ -109,20 +109,23 @@ public class RTra {
 	 * @description 旋转坐标系（点不动，坐标系动）
 	 */
 	private void rotate_axes(){
-		for(int i = 0 ; i < cluster.size() ; i++){
-			Line l = cluster.get(i);
+		for(int i = 0 ; i < tracluster.size() ; i++){
+			Line l = tracluster.get(i);
 			Point s = l.getS();
 			Point stemp = new Point();
 			stemp.setX(s.x * cosv + s.y * sinv);
 			stemp.setY(-s.x * sinv + s.y * cosv );
+			
 			points.add(stemp);
 			Point e = l.getE();
 			Point etemp = new Point();
 			etemp.setX(e.x * cosv + e.y * sinv);
 			etemp.setY(-e.x * sinv + e.y * cosv );
 			points.add(etemp);
-			cluster.get(i).setS(stemp);
-			cluster.get(i).setE(etemp);
+			
+			Line save = new Line(stemp, etemp);
+			tracluster.remove(i);
+			tracluster.add(i, save);
 		}
 	}
 
@@ -160,8 +163,8 @@ public class RTra {
 	
 	private CalcBean getNeighbor(Point p){
 		CalcBean bean = new CalcBean();
-		for(int i = 0 ; i < cluster.size() ; i++){
-			Line l = cluster.get(i);
+		for(int i = 0 ; i < tracluster.size() ; i++){
+			Line l = tracluster.get(i);
 			double max = l.getS().x;
 			double min = l.getE().x;
 			if(max < min){

@@ -14,6 +14,8 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 
 import cn.nocml.FileTool;
+import cn.nocml.MathTool;
+import cn.nocml.Pair;
 
 import com.nocml.pojo.Line;
 import com.nocml.pojo.Point;
@@ -372,7 +374,24 @@ public class TraClus {
 			}
 		}
 	}
-	
+	private cn.nocml.Pair<Double , Integer> calclateParameter(){
+		int n = lines.size();
+		int sigma = 0;
+		double prob = 0.0;
+		for(int i = 0 ; i < n ; i++){
+//			if( lines.get(i).getCluster().size() == 0)
+//				System.out.println("pause");
+			sigma += lines.get(i).getCluster().size() + 1;
+		} 
+		for(int i = 0 ; i < n ;i++){
+			double nx = lines.get(i).getCluster().size() + 1;
+			double px = nx / sigma;
+			prob +=(px * MathTool.log(px, 2));
+		}
+		prob = -1 * prob;
+		int avg = sigma / n;
+		return new Pair<Double , Integer>(prob , avg);
+	}
 	public static void main(String[] args) {
 		try{
 			TraClus traClus = new TraClus();
@@ -391,6 +410,7 @@ public class TraClus {
 			traClus.outputCluster("cluster_my.txt");
 			traClus.check_tra_num(10);
 			traClus.outputCluster("cluster_my_check.txt");
+			System.out.println(traClus.calclateParameter());
 			System.out.println(traClus.getLines().size());
 			HashMap<Color , List<Line>> toDraw = new HashMap<Color, List<Line>>();
 			HashMap<Integer, Trajectory> trajecotrys = traClus.getTrajectorys();

@@ -395,21 +395,21 @@ public class TraClus {
 	public static void main(String[] args) {
 		try{
 			TraClus traClus = new TraClus();
-			String root = System.getProperty("user.dir") + "/";
+			String root = System.getProperty("user.dir") + "/data/";
 //			String filename = "data.motion.txt";
 //			traClus.loadTrajectory(root + filename);
 			String filename = "Copydeer95.txt";
 			traClus.loadPoints(root + filename);
 			Draw draw = new Draw();
-			traClus.setParameter(15, 20);
-			traClus.setMDL_COST_ADVANTAGE(10);
+			traClus.setParameter(20, 30);
+			traClus.setMDL_COST_ADVANTAGE(8);
 			traClus.partition();
 			traClus.sortLine();
-			traClus.ouputLines("ls_my.txt");
+			traClus.ouputLines(root + "ls_my.txt");
 			traClus.cluster();
-			traClus.outputCluster("cluster_my.txt");
+			traClus.outputCluster(root + "cluster_my.txt");
 			traClus.check_tra_num(10);
-			traClus.outputCluster("cluster_my_check.txt");
+			traClus.outputCluster(root +"cluster_my_check.txt");
 			System.out.println(traClus.calclateParameter());
 			System.out.println(traClus.getLines().size());
 			HashMap<Color , List<Line>> toDraw = new HashMap<Color, List<Line>>();

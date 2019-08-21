@@ -422,7 +422,7 @@ public class TraClus {
 			draw.addLines(toDraw);
 			
 			ArrayList<Trajectory> rTrajectory = traClus.getRTrajectory(5,25);
-			traClus.saveRtrajectory("RTra.txt");
+			traClus.saveRtrajectory(root + "RTra.txt");
 			for(int i = 0 ; i < rTrajectory.size() ; i++){
 				draw.addPoints(new Color(255,0,255), rTrajectory.get(i).getPoints());
 			}
